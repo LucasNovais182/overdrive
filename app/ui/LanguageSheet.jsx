@@ -14,6 +14,9 @@ import { colors } from './colors.js';
 import { LEVELS, setVibrationLevel, useVibrationLevel } from './haptics.js';
 import { LIMITS, setSpeedLimit, useSpeedLimit } from '../state/speed-limit.js';
 import { setDeletePackages, useDeletePackages } from '../state/package-cleanup.js';
+import { submitDebridKey, useDebridKey } from '../state/debrid-key.js';
+import { URLDialog } from '../downloads/URLDialog.jsx';
+import { useState } from 'react';
 import { Text, View, useIsFocused } from '@ps5-react/core';
 
   var nameOf = (code) => LOCALES.find((locale2) => locale2.code === code).name;
@@ -76,6 +79,18 @@ import { Text, View, useIsFocused } from '@ps5-react/core';
       /* @__PURE__ */ (0, jsx)(View, { style: { flexDirection: "row", gap: 9 }, children: [true, false].map((value) => /* @__PURE__ */ (0, jsx)(PackagesSegment, { on: value, chosen: value === on }, String(value))) })
     ] });
   }
+  // The Real-Debrid API token: one row showing it masked, Cross opens the keyboard dialog.
+  function DebridKey({ onEdit }) {
+    const t2 = useT();
+    const key = useDebridKey();
+    return /* @__PURE__ */ (0, jsx)(View, { focusKey: "settings:debrid", onPress: onEdit, style: (_state) => [{ position: "relative", borderRadius: 12, paddingHorizontal: 18, paddingVertical: 18 }, _state.focused ? { backgroundColor: "#212125" } : null], children: /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 3 }, children: [
+      /* @__PURE__ */ (0, jsxs)(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, children: [
+        /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Inter-Regular", fontSize: 23, fontWeight: 600, color: colors.fg }, children: t2("settings.debridKey") }),
+        /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Inter-Regular", fontSize: 21, color: colors.fg }, children: key ? `••••${key.slice(-4)}` : t2("settings.debridKeyUnset") })
+      ] }),
+      /* @__PURE__ */ (0, jsx)(Text, { style: { fontFamily: "Inter-Regular", fontSize: 21, color: colors.muted, lineHeight: 30 }, children: t2("settings.debridKeyDetail") })
+    ] }) });
+  }
   // The vibration level (issue #32), laid out like the speed limit: every step in view, Cross picks.
   var levelName = (t2, level) => level ? formatPercent2(level) : t2("settings.vibrationOff");
   function VibrationSegment({ level, chosen }) {
@@ -112,16 +127,19 @@ import { Text, View, useIsFocused } from '@ps5-react/core';
   function LanguageSheet({ onClose }) {
     const t2 = useT();
     const choice2 = languageChoice();
+    const [editingKey, setEditingKey] = (0, useState)(false);
     const pick2 = (code) => {
       chooseLanguage(code);
       onClose();
     };
     // The speed limit and vibration stay open on press, so the change shows (or is felt) at once; a
     // language choice still closes the sheet as before. Focus opens on the chosen speed, at the top.
-    return /* @__PURE__ */ (0, jsx)(SideSheet, { title: t2("settings.title"), onClose, children: /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 6, padding: 9, paddingBottom: 48 }, children: [
+    return /* @__PURE__ */ (0, jsxs)(Fragment, { children: [
+    /* @__PURE__ */ (0, jsx)(SideSheet, { title: t2("settings.title"), onClose, children: /* @__PURE__ */ (0, jsxs)(View, { style: { gap: 6, padding: 9, paddingBottom: 48 }, children: [
       /* @__PURE__ */ (0, jsx)(SectionLabel, { icon: "download", title: t2("settings.downloads") }),
       /* @__PURE__ */ (0, jsx)(SpeedLimit, {}),
       /* @__PURE__ */ (0, jsx)(DeletePackages, {}),
+      /* @__PURE__ */ (0, jsx)(DebridKey, { onEdit: () => setEditingKey(true) }),
       /* @__PURE__ */ (0, jsx)(SectionLabel, { title: t2("settings.controller") }),
       /* @__PURE__ */ (0, jsx)(VibrationLevel, {}),
       /* @__PURE__ */ (0, jsx)(SectionLabel, { icon: "languages", title: t2("language.title"), detail: t2("language.subtitle") }),
@@ -129,7 +147,9 @@ import { Text, View, useIsFocused } from '@ps5-react/core';
       LOCALES.map(
         ({ code, name }) => /* @__PURE__ */ (0, jsx)(Row4, { code, name, detail: t2(`language.name.${code}`), checked: choice2 === code, onPress: () => pick2(code) }, code)
       )
-    ] }) });
+    ] }) }),
+    editingKey ? /* @__PURE__ */ (0, jsx)(URLDialog, { title: t2("settings.debridKey"), detail: t2("settings.debridKeyDialog"), initial: "", submit: submitDebridKey, onClose: () => setEditingKey(false) }) : null
+    ] });
   }
 
 export { LanguageSheet };

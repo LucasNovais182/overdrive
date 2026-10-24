@@ -36,7 +36,7 @@ fi
 node_dir=$(dirname "$node")
 
 prefixes=
-tail=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+tail=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 if [ -d "$HOME/.local/overdrive-sdl2" ]; then
     prefixes=$HOME/.local/overdrive-sdl2
 fi

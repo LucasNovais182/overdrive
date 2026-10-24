@@ -13,12 +13,17 @@ import { FocusScope, Text, View } from '@ps5-react/core';
     const t2 = useT();
     const [value, setValue] = (0, useState)(initial);
     const [error2, setError] = (0, useState)("");
-    const done = () => {
+    const [busy, setBusy] = (0, useState)(false);
+    const done = async () => {
+      if (busy) return;
+      setBusy(true);
+      setError("");
       try {
-        submit(value);
+        await submit(value);
         onClose();
       } catch (failure) {
         setError(failure.message);
+        setBusy(false);
       }
     };
     return (
